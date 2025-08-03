@@ -90,6 +90,64 @@ async function loadDocContent(docId: string): Promise<string | null> {
   }
 }
 
+// Determine if we should search for new documentation based on topic change
+async function shouldSearchDocuments(
+  conversationMessages: Array<{role: string, content: string}>, 
+  currentMessage: string
+): Promise<boolean> {
+  // Always search docs for the first message
+  if (conversationMessages.length <= 1) {
+    return true;
+  }
+  
+  // Get the last few assistant messages to understand current topic context
+  const recentAssistantMessages = conversationMessages
+    .filter(msg => msg.role === 'assistant')
+    .slice(-2) // Last 2 assistant responses
+    .map(msg => msg.content)
+    .join(' ');
+  
+  // If no previous assistant context, search docs
+  if (!recentAssistantMessages.trim()) {
+    return true;
+  }
+  
+  // Use a simple topic similarity check with the AI model
+  try {
+    const modelName = process.env.AI_MODEL_NAME || import.meta.env.AI_MODEL_NAME;
+    if (!modelName) return true; // Fallback to searching
+    
+    const topicCheckPrompt = `Analyze if this new user question relates to the previous conversation topic.
+
+Previous conversation context:
+${recentAssistantMessages}
+
+New user question: "${currentMessage}"
+
+Respond with only "RELATED" if the new question is about the same topic, or "NEW_TOPIC" if it's a different topic.
+
+Examples:
+- Previous: "To get started, create an account" → New: "What about team accounts?" → RELATED
+- Previous: "To get started, create an account" → New: "How do I export my data?" → NEW_TOPIC
+- Previous: "Pricing includes three tiers" → New: "Can I switch plans later?" → RELATED
+- Previous: "Pricing includes three tiers" → New: "How do I integrate with Slack?" → NEW_TOPIC`;
+    
+    const { text } = await generateText({
+      model: fireworks(modelName),
+      prompt: topicCheckPrompt,
+      temperature: 0.1, // Very low for consistent classification
+      maxOutputTokens: 10,
+    });
+    
+    const decision = text.trim().toUpperCase();
+    return decision.includes('NEW_TOPIC');
+    
+  } catch (error) {
+    console.error('Topic detection failed:', error);
+    return true; // Fallback to searching docs on error
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     
@@ -115,13 +173,17 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
     
-    const { message } = body
-    if (!message || typeof message !== 'string') {
+    const { messages } = body
+    
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({ error: 'Messages array is required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
+    
+    const conversationMessages = messages
+    const currentMessage = messages[messages.length - 1]?.content || ''
 
 
     const modelName = process.env.AI_MODEL_NAME || import.meta.env.AI_MODEL_NAME
@@ -132,13 +194,16 @@ export const POST: APIRoute = async ({ request }) => {
     // Get max search results configuration
     const maxSearchResults = parseInt(process.env.MAX_SEARCH_RESULTS || import.meta.env.MAX_SEARCH_RESULTS || '4', 10);
 
+    // Determine if we need to search for new documentation
+    const shouldSearchDocs = await shouldSearchDocuments(conversationMessages, currentMessage);
+    
     // Load the full index
     const index = await loadIndex();
     
     let context = '';
     let selectedDocs: string[] = [];
     
-    if (index) {
+    if (index && shouldSearchDocs) {
       // Create a simplified index for the LLM to analyze
       const indexSummary = index.documents.map((doc: any) => ({
         id: doc.id,
@@ -155,7 +220,7 @@ export const POST: APIRoute = async ({ request }) => {
 Available Documentation:
 ${JSON.stringify(indexSummary, null, 2)}
 
-User Question: "${message}"
+User Question: "${currentMessage}"
 
 Instructions:
 1. Analyze the user's question to understand what they're asking about
@@ -269,9 +334,17 @@ For code examples:
 
 Be conversational and guide users step-by-step without showing full code blocks.`;
 
+    // Build conversation history (limit to last 10 messages for token efficiency)
+    const recentMessages = conversationMessages.slice(-10)
+    const conversationHistory = recentMessages.length > 1 
+      ? recentMessages.slice(0, -1).map(msg => 
+          `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+        ).join('\n')
+      : ''
+    
     const fullPrompt = context 
-      ? `${systemPrompt}\n\nContext:\n${context}\n\nUser Question: ${message}`
-      : `${systemPrompt}\n\nUser Question: ${message}`;
+      ? `${systemPrompt}\n\nContext:\n${context}${conversationHistory ? `\n\nConversation History:\n${conversationHistory}` : ''}\n\nUser Question: ${currentMessage}`
+      : `${systemPrompt}${conversationHistory ? `\n\nConversation History:\n${conversationHistory}` : ''}\n\nUser Question: ${currentMessage}`;
 
     
     const { text } = await generateText({

@@ -348,7 +348,7 @@ export class StarSupport {
             const response = await fetch(url, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ message: content }),
+                body: JSON.stringify({ messages: this.state.messages }),
             });
             if (!response.ok) {
                 throw new Error('Failed to get response');
