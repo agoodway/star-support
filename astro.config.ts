@@ -1,4 +1,5 @@
 import starlight from '@astrojs/starlight';
+import vercelStatic from '@astrojs/vercel/static';
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections';
 import { defineConfig, sharpImageService } from 'astro/config';
 import rehypeSlug from 'rehype-slug';
@@ -19,6 +20,8 @@ const site = NETLIFY_PREVIEW_SITE || 'https://docs.astro.build/';
 // https://astro.build/config
 export default defineConfig({
 	site,
+	output: 'static',
+	adapter: vercelStatic(),
 	integrations: [
 		devServerFileWatcher([
 			'./config/**', // Custom plugins and integrations

@@ -65,6 +65,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/sitemap": "^3.4.2",
     "@astrojs/starlight": "^0.35.2",
+    "@astrojs/vercel": "^8.2.5",
     "@expressive-code/plugin-collapsible-sections": "^0.41.2",
     "@lunariajs/core": "https://pkg.pr.new/lunariajs/lunaria/@lunariajs/core@f07e1a3",
     "ai": "^5.0.0",
