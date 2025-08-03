@@ -324,10 +324,11 @@ export class StarSupport {
 
 		// Make actual API call
 		try {
-			const baseUrl = this.config.api.baseUrl || '';
+			// Always use current origin to avoid build-time URL issues
+			const baseUrl = window.location.origin;
 			const chatEndpoint = this.config.api.endpoints?.chat || '/api/star-support/chat/';
 			// Ensure proper URL formatting
-			const url = baseUrl ? `${baseUrl}${chatEndpoint}` : chatEndpoint;
+			const url = `${baseUrl}${chatEndpoint}`;
 			const authKey = this.config.api.authKey || '';
 
 			const headers: HeadersInit = {
