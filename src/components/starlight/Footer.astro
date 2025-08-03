@@ -12,14 +12,13 @@ import { Ad } from '../RightSidebar/ad';
 
 <!-- Star Support Widget - Show on all pages -->
 <star-support
-  api-base-url={Astro.url.origin}
+  api-base-url=""
   auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
   theme="auto"
   position="bottom-right"
   welcome-message="Hi! How can I help you with Astro today?"
   bot-name="Astro AI"
   header-title="Astro Chat"
-  api-base-url=""
 />
 
 <script>
