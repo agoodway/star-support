@@ -28,6 +28,8 @@ import { Ad } from '../RightSidebar/ad';
   // Initialize widget with Starlight colors
   const widget = document.querySelector('star-support');
   if (widget) {
+    // Set the base URL to the current origin to ensure it uses the correct domain
+    widget.setAttribute('api-base-url', window.location.origin);
     console.log('🚀 Star Support widget initialized');
     
     // Add Starlight color scheme
