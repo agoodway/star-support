@@ -12,12 +12,7 @@ import { starlightPluginLlmsTxt } from './config/plugins/llms-txt';
 import { rehypeTasklistEnhancer } from './config/plugins/rehype-tasklist-enhancer';
 import { remarkFallbackLang } from './config/plugins/remark-fallback-lang';
 
-/* https://docs.netlify.com/configure-builds/environment-variables/#read-only-variables */
-const NETLIFY_PREVIEW_SITE = process.env.CONTEXT !== 'production' && process.env.DEPLOY_PRIME_URL;
-
-// Use Vercel URL if available, otherwise fallback
-const VERCEL_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
-const site = VERCEL_URL || NETLIFY_PREVIEW_SITE || 'https://docs.astro.build/';
+const site = process.env.SITE_URL || 'https://docs.astro.build/';
 
 // https://astro.build/config
 export default defineConfig({
