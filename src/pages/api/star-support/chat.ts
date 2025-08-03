@@ -264,7 +264,8 @@ For code examples:
 - Describe the code conceptually
 - Use inline code for key syntax: \`import Component from './Component.js'\`
 - Break down multi-line code into steps
-- Example: "First, add the import statement \`import Component from './Component'\` at the top. Then use it in your code as \`<Component />\`"
+- Example: "First, add the import statement \`import Layout from '../layouts/Layout.astro'\` at the top. Then wrap your content in \`<Layout>..content..</Layout>\`"
+- Always wrap commands, file names, and code snippets in backticks like \`npm install\`, \`astro.config.mjs\`, or \`import Layout from './Layout.astro'\`
 
 Be conversational and guide users step-by-step without showing full code blocks.`;
 
