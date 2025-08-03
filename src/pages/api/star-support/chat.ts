@@ -378,14 +378,52 @@ Be conversational and guide users step-by-step without showing full code blocks.
     
 
     // Prepare sources for the response
+    // For follow-up questions on same topic, extract sources from conversation history
+    let sourcesToReturn = selectedDocs;
+
+    if (!shouldSearchDocs && selectedDocs.length === 0) {
+      // Extract unique source URLs from previous assistant messages
+      const previousSources = new Set<string>();
+
+      for (const msg of conversationMessages) {
+        if (msg.role === 'assistant' && msg.sources && Array.isArray(msg.sources)) {
+          for (const source of msg.sources) {
+            if (source.url) {
+              previousSources.add(source.url);
+            }
+          }
+        }
+      }
+
+      // Map URLs back to document IDs if we have the index
+      if (index && previousSources.size > 0) {
+        sourcesToReturn = Array.from(previousSources)
+          .map(url => {
+            // Extract the last part of the URL as potential doc ID
+            const urlParts = url.split('/').filter(Boolean);
+            const potentialId = urlParts[urlParts.length - 1].replace('.html', '');
+
+            // Find matching document
+            const doc = index.documents.find((d: any) =>
+              d.url === url ||
+              d.url.includes(potentialId) ||
+              d.id === potentialId
+            );
+
+            return doc ? doc.id : null;
+          })
+          .filter(Boolean);
+      }
+    }
+
     // Check if request is from external site
     const origin = request.headers.get('origin');
     const host = request.headers.get('host');
     
     // Determine if we need to provide full URLs
     const isExternal = origin && !origin.includes(host || 'localhost');
-    
-    const sources = selectedDocs.map(docId => {
+
+    const sources = sourcesToReturn.map(docId => {
       const doc = index?.documents.find((d: any) => d.id === docId);
       if (!doc) return null;
       
