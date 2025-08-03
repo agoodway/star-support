@@ -10,12 +10,12 @@ This is a demonstration of the [Star Support](https://github.com/agoodway/star-s
 
 ## What is Star Support?
 
-Star Support is a TypeScript widget library for creating AI-powered question and support bots that understand your documentation content. It provides:
+Star Support is a TypeScript widget library for creating AI-powered question and support bots that understand your documentation content. It uses a simplified RAG (Retrieval-Augmented Generation) approach:
 
-- **Framework Agnostic**: Works with any web application
-- **RAG-Powered**: Retrieval-Augmented Generation using your documentation
+- **Pre-built Index**: A build script generates AI-powered summaries of each document
 - **Smart Document Selection**: AI selects the most relevant documents per query
-- **Production Ready**: Security features, responsive design, accessibility support
+- **Framework Agnostic**: Works with any web application
+- **Vercel AI SDK**: Uses Fireworks AI provider by default (can be modified for other providers)
 
 ## Quick Start
 
@@ -38,10 +38,9 @@ Set environment variables in `.env`:
 ```bash
 # AI Provider (Required)
 AI_API_KEY="fw_your_fireworks_api_key"
-AI_API_BASE="https://api.fireworks.ai/inference/v1"
 AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
 
-# Widget Security (Optional)
+# Widget Security (Recommended to prevent API abuse)
 STAR_SUPPORT_AUTH_KEY="your_secret_key"
 
 # Search Configuration (Optional)
@@ -52,11 +51,20 @@ MAX_SEARCH_RESULTS="5"  # Number of documents to use for answers (default: 5)
 
 ### Try These Questions
 
+Test the AI assistant with these documentation-focused questions:
+
 1. **"How do I add TypeScript to my Astro project?"**
 2. **"What's the difference between .astro and .md files?"**
-3. **"How do I deploy to Vercel?"**
+3. **"How do I fetch data from an API in Astro?"**
 4. **"Can I use React components in Astro?"**
-5. **"How do I set up content collections?"**
+5. **"How do I set up environment variables?"**
+6. **"What's the best way to handle images in Astro?"**
+7. **"How do I enable server-side rendering?"**
+8. **"How do I deploy my Astro site to Vercel?"**
+9. **"How do I create dynamic routes?"**
+10. **"What are Astro integrations and how do I install them?"**
+11. **"How do I use content collections for my blog?"**
+12. **"How do I optimize my Astro site for SEO?"**
 
 ### Widget Integration
 

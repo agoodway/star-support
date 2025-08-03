@@ -196,6 +196,62 @@ response.setHeader('Access-Control-Allow-Credentials', 'true');
 
 For development, you can use `'*'` for the origin, but production should specify exact domains for security.
 
+## Markdown Support
+
+The widget supports a limited subset of markdown for security and display compatibility:
+
+**Allowed formatting:**
+- **bold text** (`**text**`)
+- *italic text* (`*text*`)
+- `inline code` (single backticks only)
+- [links](url) (`[text](url)`)
+- Line breaks and paragraphs
+
+**NOT supported:**
+- Code blocks (triple backticks)
+- Headers (#, ##, etc)
+- HTML tags
+- Tables
+- Images
+
+The widget automatically sanitizes responses to ensure proper display.
+
+## Security Features
+
+The widget includes several security features:
+
+### Input Sanitization
+- XSS prevention through content sanitization
+- Removal of script tags and event handlers
+- Message length limits (1000 characters)
+
+### Authentication
+Optional authentication via `auth-key` attribute:
+
+```html
+<star-support 
+  api-base-url="https://api.example.com"
+  auth-key="your-secret-key">
+</star-support>
+```
+
+The auth key is sent as `x-auth-key` header with API requests.
+
+### CORS Configuration
+For production deployments embedding the widget on external sites:
+
+```javascript
+// API server configuration
+const corsOrigin = process.env.STAR_SUPPORT_CORS_ORIGIN || '*';
+response.setHeader('Access-Control-Allow-Origin', corsOrigin);
+```
+
+**Security recommendations:**
+- Always use specific origins in production, not `'*'`
+- Use HTTPS for all API communications
+- Implement rate limiting on your API
+- Validate and sanitize all user inputs server-side
+
 ## Configuration Reference
 
 ### Web Component Attributes
