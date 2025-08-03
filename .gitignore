@@ -37,6 +37,12 @@ sandbox.config.json
 # Local Netlify folder
 .netlify
 
+# Vercel
+.vercel
+
+# Claude AI
+.claude
+
 # Cached requests
 .cache
 **/_fonts/brand/

@@ -12,6 +12,7 @@ import { Ad } from '../RightSidebar/ad';
 
 <!-- Star Support Widget - Show on all pages -->
 <star-support
+	api-base-url=""
 	auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
 	theme="auto"
 	position="bottom-right"
@@ -22,21 +23,6 @@ import { Ad } from '../RightSidebar/ad';
 <script>
 	// Import the Star Support widget
 	import '/widget/dist/star-support.js';
-	
-	// Debug logging
-	console.log('[Star Support Debug] Footer script loaded');
-	console.log('[Star Support Debug] Current page URL:', window.location.href);
-	console.log('[Star Support Debug] Current origin:', window.location.origin);
-	
-	// Log when widget is ready
-	customElements.whenDefined('star-support').then(() => {
-		console.log('[Star Support Debug] Widget custom element defined');
-		const widget = document.querySelector('star-support');
-		if (widget) {
-			console.log('[Star Support Debug] Widget found in DOM');
-			console.log('[Star Support Debug] Widget HTML:', widget.outerHTML);
-		}
-	});
 </script>
 
 <style>

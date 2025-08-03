@@ -283,18 +283,12 @@ export class StarSupport {
         this.showLoading();
         // Make actual API call
         try {
-            // Debug logging
-            console.log('[Star Support Debug] Current location:', window.location.href);
-            console.log('[Star Support Debug] Current origin:', window.location.origin);
-            console.log('[Star Support Debug] Config baseUrl:', this.config.api.baseUrl);
-            // Always use current origin to avoid build-time URL issues
-            const baseUrl = window.location.origin;
-            const chatEndpoint = this.config.api.endpoints?.chat || '/api/star-support/chat/';
+            // Use configured baseUrl or fall back to current origin
+            const baseUrl = this.config.api.baseUrl || window.location.origin;
+            const chatEndpoint = this.config.api.endpoints?.chat || '/api/star-support/chat';
             // Ensure proper URL formatting
             const url = `${baseUrl}${chatEndpoint}`;
             const authKey = this.config.api.authKey || '';
-            console.log('[Star Support Debug] Final URL:', url);
-            console.log('[Star Support Debug] Using auth key:', !!authKey);
             const headers = {
                 'Content-Type': 'application/json',
             };
@@ -414,10 +408,6 @@ export class StarSupportElement extends HTMLElement {
     }
     connectedCallback() {
         try {
-            // Debug logging for initialization
-            console.log('[Star Support Debug] Web Component initializing...');
-            console.log('[Star Support Debug] api-base-url attribute:', this.getAttribute('api-base-url'));
-            console.log('[Star Support Debug] All attributes:', this.getAttributeNames().map(name => `${name}="${this.getAttribute(name)}"`).join(' '));
             const config = {
                 api: {
                     baseUrl: this.getAttribute('api-base-url') || '',
@@ -434,7 +424,6 @@ export class StarSupportElement extends HTMLElement {
                     headerTitle: this.getAttribute('header-title') || undefined,
                 },
             };
-            console.log('[Star Support Debug] Config object:', JSON.stringify(config, null, 2));
             this.widget = new StarSupport(config);
         }
         catch (error) {

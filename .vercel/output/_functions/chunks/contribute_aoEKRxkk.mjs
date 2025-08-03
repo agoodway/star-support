@@ -1,8 +1,0 @@
-async function getMod() {
-						return import('./contribute_B9uM_zVw.mjs');
-					}
-					const collectedLinks = [];
-					const collectedStyles = [".avatar-list:where(.astro-4mviunox){--avatar-size: 3rem;--avatar-overlap: -.125em;--avatar-row-spacing: .125em;--avatar-outline-width: 1px;--avatar-outline-offset: .08em;display:flex;flex-wrap:wrap;list-style:none;padding:var(--avatar-border);font-size:var(--avatar-size)}.avatar-list:where(.astro-4mviunox) li:where(.astro-4mviunox){--avatar-row-margin: calc( var(--avatar-outline-offset) + var(--avatar-outline-width) + var(--avatar-row-spacing) / 2 );margin:var(--avatar-row-margin) var(--avatar-overlap) var(--avatar-row-margin) 0}.avatar-list:where(.astro-4mviunox) img:where(.astro-4mviunox),.avatar-list:where(.astro-4mviunox) a:where(.astro-4mviunox){display:block;border-radius:50%;width:var(--avatar-size);height:var(--avatar-size);text-decoration:none;color:transparent}.avatar-list:where(.astro-4mviunox) img:where(.astro-4mviunox){width:100%;height:100%;object-fit:cover;background-color:var(--theme-bg);box-shadow:0 0 0 var(--avatar-outline-width) var(--theme-divider),0 0 0 var(--avatar-outline-offset) var(--theme-bg),0 0 0 calc(var(--avatar-outline-offset) + var(--avatar-outline-width)) var(--theme-divider),0 0 calc(var(--theme-glow-blur) + var(--avatar-outline-offset)) var(--theme-glow-diffuse);outline:1px solid transparent}.avatar-list:where(.astro-4mviunox) a:where(.astro-4mviunox):focus{outline:2px solid var(--theme-accent);outline-offset:var(--avatar-outline-offset)}\n"];
-					const defaultMod = { __astroPropagation: true, getMod, collectedLinks, collectedStyles, collectedScripts: [] };
-
-export { defaultMod as default };
