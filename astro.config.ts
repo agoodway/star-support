@@ -12,7 +12,10 @@ import { starlightPluginLlmsTxt } from './config/plugins/llms-txt';
 import { rehypeTasklistEnhancer } from './config/plugins/rehype-tasklist-enhancer';
 import { remarkFallbackLang } from './config/plugins/remark-fallback-lang';
 
-const site = process.env.SITE_URL || 'https://docs.astro.build/';
+// Use Vercel's auto-provided URL when deployed, fallback to custom SITE_URL or default
+const site = process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : process.env.SITE_URL || 'https://docs.astro.build/';
 
 // https://astro.build/config
 export default defineConfig({
