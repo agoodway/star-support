@@ -12,7 +12,6 @@ import { Ad } from '../RightSidebar/ad';
 
 <!-- Star Support Widget - Show on all pages -->
 <star-support
-  api-base-url=""
   auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
   theme="auto"
   position="bottom-right"
@@ -26,11 +25,9 @@ import { Ad } from '../RightSidebar/ad';
   import '/widget/dist/star-support.js';
   
   // Initialize widget with Starlight colors
-  const widget = document.querySelector('star-support');
-  if (widget) {
-    // Set the base URL to the current origin to ensure it uses the correct domain
-    widget.setAttribute('api-base-url', window.location.origin);
+  customElements.whenDefined('star-support').then(() => {
     console.log('🚀 Star Support widget initialized');
+  });
     
     // Add Starlight color scheme
     const style = document.createElement('style');
