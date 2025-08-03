@@ -296,7 +296,6 @@ export class StarSupport {
     renderMessages() {
         if (!this.messagesContainer)
             return;
-        const previousScrollHeight = this.messagesContainer.scrollHeight;
         const wasAtBottom = this.messagesContainer.scrollTop + this.messagesContainer.clientHeight >=
             this.messagesContainer.scrollHeight - 10;
         this.messagesContainer.innerHTML = '';
@@ -578,7 +577,7 @@ export class StarSupport {
         emailForm.innerHTML = `
 			<div class="star-support-email-header">
 				<span>✉️</span>
-				<span>Connect with our team</span>
+				<span>${this.config.behavior?.handoffFormTitle || 'Connect with our team'}</span>
 			</div>
 			<label for="star-support-email-input">Your email:</label>
 			<input 
@@ -589,11 +588,11 @@ export class StarSupport {
 				value="${this.state.userEmail || ''}"
 				required
 			/>
-			<label for="star-support-email-message">Add any additional details (optional):</label>
+			<label for="star-support-email-message">${this.config.behavior?.handoffFormDetailsLabel || 'Add any additional details (optional):'}</label>
 			<textarea 
 				id="star-support-email-message"
 				class="star-support-email-textarea" 
-				placeholder="Any additional context..."
+				placeholder="${this.config.behavior?.handoffFormDetailsPlaceholder || 'Any additional context...'}"
 			></textarea>
 			<div class="star-support-email-buttons">
 				<button class="star-support-email-cancel">Cancel</button>
@@ -710,6 +709,9 @@ export class StarSupportElement extends HTMLElement {
             'topic-context',
             'enable-human-handoff',
             'user-email',
+            'handoff-form-title',
+            'handoff-form-details-label',
+            'handoff-form-details-placeholder',
         ];
     }
     connectedCallback() {
@@ -734,6 +736,9 @@ export class StarSupportElement extends HTMLElement {
                     topicContext: this.getAttribute('topic-context') || undefined,
                     enableHumanHandoff: this.getAttribute('enable-human-handoff') === 'true',
                     userEmail: this.getAttribute('user-email') || undefined,
+                    handoffFormTitle: this.getAttribute('handoff-form-title') || undefined,
+                    handoffFormDetailsLabel: this.getAttribute('handoff-form-details-label') || undefined,
+                    handoffFormDetailsPlaceholder: this.getAttribute('handoff-form-details-placeholder') || undefined,
                 },
             };
             this.widget = new StarSupport(config);

@@ -43,6 +43,9 @@ export interface StarSupportConfig {
     topicContext?: string;
     enableHumanHandoff?: boolean;
     userEmail?: string;
+    handoffFormTitle?: string;
+    handoffFormDetailsLabel?: string;
+    handoffFormDetailsPlaceholder?: string;
   };
 }
 
