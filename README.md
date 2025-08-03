@@ -1,18 +1,27 @@
-# Star Support: AI-Powered Documentation Assistant
+# Star Support Demo
 
-**A TypeScript widget library for creating AI-powered question and support bots that understand your Astro content.**
+This is a demonstration of the [Star Support](https://github.com/agoodway/star-support) AI-powered documentation assistant widget, integrated with a fork of the official Astro documentation site.
 
-> **Note**: This is a fork of the [official Astro documentation repository](https://github.com/withastro/docs) used to demonstrate the Star Support widget and AI chat functionality. The widget and backend components have not yet been extracted into a standalone library.
+## About This Demo
 
-Star Support provides a framework-agnostic chat widget that can be embedded anywhere while leveraging Astro's content collection system for intelligent document retrieval and AI-powered responses.
+- **Based on**: Fork of the [Astro Docs Starlight site](https://github.com/withastro/docs)
+- **Modified**: Removed all non-English language content to simplify the demo
+- **Purpose**: Showcase Star Support widget capabilities with real documentation content
 
-## Quick Start (Demo Application)
+## What is Star Support?
 
-This repository includes a complete Astro documentation site demonstrating Star Support integration.
+Star Support is a TypeScript widget library for creating AI-powered question and support bots that understand your documentation content. It provides:
+
+- **Framework Agnostic**: Works with any web application
+- **RAG-Powered**: Retrieval-Augmented Generation using your documentation
+- **Smart Document Selection**: AI selects the most relevant documents per query
+- **Production Ready**: Security features, responsive design, accessibility support
+
+## Quick Start
 
 ```bash
-git clone https://github.com/your-repo/star-support
-cd star-support
+git clone https://github.com/agoodway/star-support-demo
+cd star-support-demo
 pnpm install
 cp .env.example .env
 # Configure your AI_API_KEY in .env
@@ -20,83 +29,9 @@ pnpm run build-star-support-index
 pnpm run dev
 ```
 
-The demo site runs at `http://localhost:4321` with the Star Support widget enabled.
+Visit `http://localhost:4321` to see the Star Support widget in action on the Astro documentation.
 
-## Star Support Library
-
-### Core Features
-
-- **Framework Agnostic**: TypeScript widget works with any web application
-- **RAG-Powered**: Retrieval-Augmented Generation using your documentation
-- **Smart Document Selection**: AI selects 1-8 most relevant documents per query
-- **Security First**: XSS prevention, input sanitization, optional authentication
-- **Production Ready**: Error boundaries, responsive design, accessibility support
-
-### Architecture
-
-```
-star-support/
-├── widget/                 # TypeScript widget library
-│   ├── src/
-│   │   ├── star-support.ts    # Main widget class
-│   │   ├── types.ts           # TypeScript interfaces
-│   │   └── styles.css         # Widget styles
-│   └── dist/               # Built files
-├── src/pages/api/star-support/
-│   └── chat.ts            # Astro API endpoint
-├── scripts/
-│   └── build-index.mjs    # Documentation indexer
-└── public/
-    └── star-support-index.json  # Generated search index
-```
-
-## Installation Options
-
-### Option 1: Embed in Astro Site
-
-```astro
----
-// src/components/Footer.astro
----
-<star-support
-  api-base-url={Astro.url.origin}
-  auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
-  theme="auto"
-  position="bottom-right"
-  welcome-message="Hi! How can I help you with the documentation?"
-  bot-name="AI Assistant"
-  header-title="Documentation Chat"
-/>
-
-<script>
-  import '/widget/dist/star-support.js';
-</script>
-```
-
-### Option 2: External Site Integration
-
-```html
-<!-- In any web application -->
-<script type="module">
-  import 'https://your-docs-site.com/widget/dist/star-support.js'
-</script>
-
-<star-support 
-  api-base-url="https://your-docs-site.com"
-  theme="dark"
-  position="bottom-right">
-</star-support>
-```
-
-## Documentation Index Generation
-
-### Basic Usage
-
-```bash
-pnpm run build-star-support-index
-```
-
-### Configuration Options
+## Configuration
 
 Set environment variables in `.env`:
 
@@ -109,169 +44,55 @@ AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
 # Widget Security (Optional)
 STAR_SUPPORT_AUTH_KEY="your_secret_key"
 
-# Index Generation (Optional)
-INDEX_LANGUAGES="en"  # Comma-separated
-INDEX_INCLUDE_PATHS=""  # Specific paths only
-INDEX_EXCLUDE_PATHS=""  # Paths to exclude
-SUMMARY_STRATEGY="standard"  # brief, standard, detailed
-
-# URL Configuration (Optional)
-URL_STRATEGY="auto"  # auto, no-locale, locale-all
-BASE_URL=""  # For external widget usage
+# Search Configuration (Optional)
+MAX_SEARCH_RESULTS="5"  # Number of documents to use for answers (default: 5)
 ```
 
-### Advanced Index Configuration
+## Demo Features
 
-#### Target Specific Documentation Sections
-```bash
-INDEX_INCLUDE_PATHS="src/content/docs/en/guides,src/content/docs/en/reference"
-```
-
-#### Exclude Internal Documentation
-```bash
-INDEX_EXCLUDE_PATHS="src/content/docs/en/internal,src/content/docs/en/drafts"
-```
-
-#### Optimize for Different Use Cases
-```bash
-# Comprehensive documentation (default)
-SUMMARY_STRATEGY="standard"
-
-# Smaller indexes
-SUMMARY_STRATEGY="brief"
-
-# Technical depth
-SUMMARY_STRATEGY="detailed"
-```
-
-## AI Provider Configuration
-
-### Fireworks AI (Recommended)
-
-Fireworks AI with Llama 3.1 8B provides excellent performance for documentation tasks:
-
-```bash
-AI_API_KEY="fw_your_api_key"
-AI_API_BASE="https://api.fireworks.ai/inference/v1"
-AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
-```
-
-### Alternative Providers
-
-The system can be adapted for other providers by modifying the AI integration in `/src/pages/api/star-support/chat.ts`:
-
-#### OpenAI Integration
-```typescript
-import { openai } from '@ai-sdk/openai';
-
-const response = await generateText({
-  model: openai('gpt-4'),
-  prompt: buildPromptWithContext(message, context)
-});
-```
-
-#### Anthropic Integration
-```typescript
-import { anthropic } from '@ai-sdk/anthropic';
-
-const response = await generateText({
-  model: anthropic('claude-3-sonnet-20240229'),
-  prompt: buildPromptWithContext(message, context)
-});
-```
-
-## Widget Configuration
-
-### TypeScript Interface
-
-```typescript
-interface StarSupportConfig {
-  api: {
-    baseUrl: string
-    authKey?: string
-  }
-  ui?: {
-    position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-    theme?: 'light' | 'dark' | 'auto'
-    buttonIcon?: string
-  }
-  behavior?: {
-    welcomeMessage?: string
-    headerTitle?: string
-    botName?: string
-  }
-}
-```
-
-### Web Component Attributes
-
-```html
-<star-support
-  api-base-url="https://docs.example.com"
-  auth-key="optional-secret"
-  theme="auto"
-  position="bottom-right"
-  welcome-message="How can I help?"
-  bot-name="Assistant"
-  header-title="Support Chat"
-  button-icon="robotWhite">
-</star-support>
-```
-
-## Example Queries
-
-Test the AI assistant with these documentation-focused questions:
+### Try These Questions
 
 1. **"How do I add TypeScript to my Astro project?"**
 2. **"What's the difference between .astro and .md files?"**
-3. **"How do I fetch data from an API in Astro?"**
+3. **"How do I deploy to Vercel?"**
 4. **"Can I use React components in Astro?"**
-5. **"How do I set up environment variables?"**
-6. **"What's the best way to handle images in Astro?"**
-7. **"How do I enable server-side rendering?"**
-8. **"How do I deploy my Astro site to Vercel?"**
-9. **"How do I create dynamic routes?"**
-10. **"What are Astro integrations and how do I install them?"**
-11. **"How do I use content collections for my blog?"**
-12. **"How do I optimize my Astro site for SEO?"**
+5. **"How do I set up content collections?"**
 
-## Deployment
+### Widget Integration
 
-### Important: Widget Build Step
-The widget files must be copied to the public directory before deployment:
-```bash
-# After making widget changes:
-cd widget && pnpm run build
-cp widget/dist/* public/widget/dist/
+The widget is integrated in the site footer (`src/components/starlight/Footer.astro`):
+
+```astro
+<star-support
+  api-base-url=""
+  auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
+  theme="auto"
+  position="bottom-right"
+  welcome-message="Hi! How can I help you with Astro today?"
+  bot-name="Astro AI"
+  header-title="Astro Chat">
+</star-support>
 ```
 
-### Vercel
-The project includes Vercel adapter configuration:
-- Set `AI_API_KEY` and `STAR_SUPPORT_AUTH_KEY` in Vercel environment variables
-- The site URL is automatically detected from Vercel's environment
-- API routes remain server-side while pages are statically generated
+## Architecture
 
-## Production Configuration
-
-### Security Recommendations
-
-```bash
-# Use authentication for external sites
-STAR_SUPPORT_AUTH_KEY="strong-random-key"
-
-# Configure CORS for specific domains  
-STAR_SUPPORT_CORS_ORIGIN="https://yourapp.com"
 ```
-
+star-support-demo/
+├── widget/                     # Star Support widget library
+│   ├── src/
+│   │   ├── star-support.ts    # Main widget class
+│   │   ├── types.ts           # TypeScript interfaces
+│   │   └── styles.css         # Widget styles
+│   └── dist/                  # Built files
+├── src/pages/api/star-support/
+│   └── chat.ts               # Astro API endpoint
+├── scripts/
+│   └── build-index.mjs       # Documentation indexer
+└── public/
+    └── star-support-index.json  # Generated search index
+```
 
 ## Development
-
-### Running This Demo Site
-
-```bash
-pnpm install
-pnpm run dev
-```
 
 ### Building the Widget
 
@@ -280,15 +101,36 @@ cd widget
 pnpm run build
 ```
 
-### Regenerating Index
+### Regenerating the Documentation Index
 
 ```bash
 pnpm run build-star-support-index
 ```
 
-## Contributing
+### Running the Demo
 
-This project demonstrates AI-powered documentation assistance. The widget library can be extracted and used independently in any web application that needs intelligent document-based Q&A capabilities.
+```bash
+pnpm run dev
+```
 
-For larger contributions, please open an issue first to discuss your proposed changes.
+## Deployment
 
+The demo is configured for Vercel deployment:
+
+1. Set environment variables in Vercel dashboard
+2. Deploy with `vercel --prod`
+
+## About the Original Astro Docs
+
+This demo is built on top of the official Astro documentation, which showcases:
+- Content collections
+- MDX components
+- Starlight theme
+- Multi-language support (removed in this demo)
+
+For the original Astro documentation, visit [docs.astro.build](https://docs.astro.build).
+
+## License
+
+- Star Support widget code: See [Star Support repository](https://github.com/agoodway/star-support)
+- Astro documentation content: See original [Astro Docs license](https://github.com/withastro/docs)
