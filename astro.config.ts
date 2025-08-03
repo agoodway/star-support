@@ -15,7 +15,9 @@ import { remarkFallbackLang } from './config/plugins/remark-fallback-lang';
 /* https://docs.netlify.com/configure-builds/environment-variables/#read-only-variables */
 const NETLIFY_PREVIEW_SITE = process.env.CONTEXT !== 'production' && process.env.DEPLOY_PRIME_URL;
 
-const site = NETLIFY_PREVIEW_SITE || 'https://docs.astro.build/';
+// Use Vercel URL if available, otherwise fallback
+const VERCEL_URL = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
+const site = VERCEL_URL || NETLIFY_PREVIEW_SITE || 'https://docs.astro.build/';
 
 // https://astro.build/config
 export default defineConfig({
