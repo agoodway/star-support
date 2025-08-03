@@ -148,6 +148,9 @@ export const POST: APIRoute = async ({ request }) => {
       throw new Error('AI_MODEL_NAME environment variable is not set');
     }
 
+    // Get max search results configuration
+    const maxSearchResults = parseInt(process.env.MAX_SEARCH_RESULTS || import.meta.env.MAX_SEARCH_RESULTS || '5', 10);
+
     // Load the full index
     const index = await loadIndex();
     
@@ -176,7 +179,7 @@ User Question: "${message}"
 Instructions:
 1. Analyze the user's question to understand what they're asking about
 2. Review the document titles, summaries, and keywords
-3. Select 1-8 most relevant documents that would help answer the question
+3. Select 1-${maxSearchResults} most relevant documents that would help answer the question
 4. Return ONLY a JSON array of document IDs - no explanation, no other text
 
 Your response must be ONLY the JSON array, like this:
