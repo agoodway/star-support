@@ -36,6 +36,8 @@ export interface StarSupportConfig {
         maxFileSize?: number;
         botName?: string;
         headerTitle?: string;
+        suggestedQuestions?: string[];
+        topicContext?: string;
     };
 }
 export interface ChatResponse {

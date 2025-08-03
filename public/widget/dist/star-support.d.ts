@@ -16,6 +16,9 @@ export declare class StarSupport {
     private setupTheme;
     private addMockMessages;
     private showWelcomeBubble;
+    private showSuggestedQuestions;
+    private handleSuggestedQuestionClick;
+    private hideSuggestedQuestions;
     private parseSimpleMarkdown;
     private renderMessages;
     private sanitizeInput;

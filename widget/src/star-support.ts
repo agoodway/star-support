@@ -147,6 +147,7 @@ export class StarSupport {
 		this.state.messages = [];
 		this.renderMessages();
 		this.showWelcomeBubble();
+		this.showSuggestedQuestions();
 	}
 
 	private showWelcomeBubble(): void {
@@ -166,6 +167,46 @@ export class StarSupport {
     `;
 
 		this.messagesContainer.appendChild(welcomeBubble);
+	}
+
+	private showSuggestedQuestions(): void {
+		if (!this.messagesContainer || !this.config.behavior?.suggestedQuestions || this.config.behavior.suggestedQuestions.length === 0) return;
+
+		const questionsContainer = document.createElement('div');
+		questionsContainer.className = 'star-support-suggested-questions';
+		questionsContainer.id = 'star-support-suggested-questions';
+
+		this.config.behavior.suggestedQuestions.forEach((question) => {
+			const questionButton = document.createElement('button');
+			questionButton.className = 'star-support-suggested-question';
+			questionButton.textContent = question;
+			questionButton.addEventListener('click', () => {
+				this.handleSuggestedQuestionClick(question);
+			});
+			questionsContainer.appendChild(questionButton);
+		});
+
+		this.messagesContainer.appendChild(questionsContainer);
+	}
+
+	private handleSuggestedQuestionClick(question: string): void {
+		// Remove suggested questions
+		const questionsElement = document.getElementById('star-support-suggested-questions');
+		questionsElement?.remove();
+
+		// Set the question as input value and send
+		if (this.input) {
+			this.input.value = question;
+			this.sendMessage();
+		}
+	}
+
+	private hideSuggestedQuestions(): void {
+		const questionsElement = document.getElementById('star-support-suggested-questions');
+		if (questionsElement) {
+			questionsElement.style.opacity = '0';
+			setTimeout(() => questionsElement.remove(), 200);
+		}
 	}
 
 	private parseSimpleMarkdown(text: string): string {
@@ -318,6 +359,9 @@ export class StarSupport {
 		this.state.messages.push(userMessage);
 		this.renderMessages();
 
+		// Hide suggested questions when user sends a message
+		this.hideSuggestedQuestions();
+
 		// Show loading
 		this.state.isLoading = true;
 		this.showLoading();
@@ -344,7 +388,10 @@ export class StarSupport {
 			const response = await fetch(url, {
 				method: 'POST',
 				headers,
-				body: JSON.stringify({ messages: this.state.messages }),
+				body: JSON.stringify({ 
+					messages: this.state.messages,
+					topicContext: this.config.behavior?.topicContext 
+				}),
 			});
 
 			if (!response.ok) {
@@ -456,6 +503,8 @@ export class StarSupportElement extends HTMLElement {
 			'bot-name',
 			'header-title',
 			'button-icon',
+			'suggested-questions',
+			'topic-context',
 		];
 	}
 
@@ -475,6 +524,10 @@ export class StarSupportElement extends HTMLElement {
 					welcomeMessage: this.getAttribute('welcome-message') || undefined,
 					botName: this.getAttribute('bot-name') || undefined,
 					headerTitle: this.getAttribute('header-title') || undefined,
+					suggestedQuestions: this.getAttribute('suggested-questions') 
+						? JSON.parse(this.getAttribute('suggested-questions')!) 
+						: undefined,
+					topicContext: this.getAttribute('topic-context') || undefined,
 				},
 			};
 

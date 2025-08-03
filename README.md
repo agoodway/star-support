@@ -89,7 +89,13 @@ The widget is integrated in the site footer (`src/components/starlight/Footer.as
   position="bottom-right"
   welcome-message="Hi! How can I help you with Astro today?"
   bot-name="Astro AI"
-  header-title="Astro Chat">
+  header-title="Astro Chat"
+  topic-context="Astro framework documentation - help users understand and use the Astro web framework"
+  suggested-questions={JSON.stringify([
+    "How do I install Astro on my Mac?", 
+    "Where can I deploy my Astro app?", 
+    "Can I use React components with Astro?"
+  ])}>
 </star-support>
 ```
 

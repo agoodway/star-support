@@ -86,7 +86,9 @@ Note: `api-base-url` defaults to current origin if not specified.
   welcome-message="How can I help you today?"
   bot-name="AI Assistant"
   header-title="Support Chat"
-  button-icon="robotWhite">
+  button-icon="robotWhite"
+  topic-context="Product documentation and support"
+  suggested-questions='["How do I get started?", "What are the pricing plans?", "How do I integrate with my app?"]'>
 </star-support>
 ```
 
@@ -120,7 +122,13 @@ const widget = new StarSupport({
     welcomeMessage: 'Hi! How can I help?',
     headerTitle: 'Support Chat',
     botName: 'AI Assistant',
-    placeholderText: 'Type your message...'
+    placeholderText: 'Type your message...',
+    topicContext: 'Product documentation and support',
+    suggestedQuestions: [
+      'How do I get started?',
+      'What are the pricing plans?',
+      'How do I integrate with my app?'
+    ]
   }
 });
 ```
@@ -138,14 +146,23 @@ curl -X POST https://your-api-server.com/api/chat \
   -H "Content-Type: application/json" \
   -H "x-auth-key: your-optional-auth-key" \
   -d '{
-    "message": "How do I add TypeScript to my project?"
+    "messages": [
+      {
+        "id": "1",
+        "content": "How do I add TypeScript to my project?",
+        "role": "user",
+        "timestamp": 1704067200000
+      }
+    ],
+    "topicContext": "Product documentation and support"
   }'
 ```
 
 **Request Body:**
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `message` | string | Yes | User's question text |
+| `messages` | array | Yes | Array of conversation messages |
+| `topicContext` | string | No | Context about what the chat is for |
 
 **Response (200 OK):**
 ```json
@@ -266,6 +283,30 @@ response.setHeader('Access-Control-Allow-Origin', corsOrigin);
 | `bot-name` | string | `'AI Bot'` | Bot display name |
 | `header-title` | string | `'Support Chat'` | Chat header title |
 | `button-icon` | string | `'robotWhite'` | Button icon name |
+| `topic-context` | string | `undefined` | Context for AI responses |
+| `suggested-questions` | string (JSON array) | `undefined` | Suggested questions shown on startup |
+
+### Suggested Questions
+
+Display clickable question suggestions to help users get started:
+
+```html
+<star-support
+  suggested-questions='["How do I get started?", "What are the pricing plans?", "Can I integrate with React?"]'>
+</star-support>
+```
+
+### Topic Context
+
+Provide context to help the AI give more relevant responses:
+
+```html
+<star-support
+  topic-context="E-commerce platform documentation and API reference">
+</star-support>
+```
+
+This context is included in the AI prompt to improve response quality and relevance.
 
 ### Available Icons
 

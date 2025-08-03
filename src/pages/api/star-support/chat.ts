@@ -173,7 +173,7 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
     
-    const { messages } = body
+    const { messages, topicContext } = body
     
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
@@ -305,7 +305,7 @@ DO NOT include any other text before or after the JSON array.`;
     }
 
     // Build the final prompt
-    const systemPrompt = `You are an AI assistant that helps users with questions about the documentation, product features, troubleshooting, and general support.
+    const systemPrompt = `You are an AI assistant that helps users with questions about ${topicContext || 'the documentation, product features, troubleshooting, and general support'}.
 ${context ? '\nUse the provided documentation context to give accurate, helpful answers. Reference specific sections when relevant.' : ''}
 
 IMPORTANT: Only use information from the provided documentation context. If the context doesn't contain relevant information, say "I don't have information about that in the documentation." Never make up information not mentioned in the context.
