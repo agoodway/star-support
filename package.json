@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "mkdir -p public/widget/dist && cp -r widget/dist/* public/widget/dist/ && astro build",
+    "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
     "format": "pnpm run format:code",
