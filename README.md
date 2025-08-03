@@ -25,7 +25,15 @@ cd star-support-demo
 pnpm install
 cp .env.example .env
 # Configure your AI_API_KEY in .env
+
+# Build the widget first (required)
+cd widget && npm install && npm run build && cd ..
+cp -r widget/dist/* public/widget/dist/
+
+# Generate the search index
 pnpm run build-star-support-index
+
+# Start the dev server
 pnpm run dev
 ```
 
@@ -44,7 +52,10 @@ AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
 STAR_SUPPORT_AUTH_KEY="your_secret_key"
 
 # Search Configuration (Optional)
-MAX_SEARCH_RESULTS="5"  # Number of documents to use for answers (default: 5)
+MAX_SEARCH_RESULTS="4"  # Number of documents to use for answers (default: 4)
+
+# Content Path Configuration (Required)
+CONTENT_PATH="src/content/docs/en"  # Base path where your content files are located
 ```
 
 ## Demo Features
@@ -84,30 +95,53 @@ The widget is integrated in the site footer (`src/components/starlight/Footer.as
 
 ## Architecture
 
+This demo uses Astro's Pages API to serve the chat backend, but the Star Support widget is designed to work with any backend that implements the required API interface. You can use Node.js, Python, Elixir, or any other server technology as long as it provides the expected endpoints and response format.
+
 ```
 star-support-demo/
-├── widget/                     # Star Support widget library
+├── widget/                     # Star Support widget library (future npm package)
 │   ├── src/
 │   │   ├── star-support.ts    # Main widget class
+│   │   ├── icons.ts           # SVG icon definitions
 │   │   ├── types.ts           # TypeScript interfaces
 │   │   └── styles.css         # Widget styles
-│   └── dist/                  # Built files
+│   ├── dist/                  # Built files (generated)
+│   ├── build.js              # Custom bundler script
+│   └── package.json          # Widget package configuration
 ├── src/pages/api/star-support/
-│   └── chat.ts               # Astro API endpoint
+│   └── chat.ts               # Chat API endpoint (Astro Pages API)
 ├── scripts/
 │   └── build-index.mjs       # Documentation indexer
 └── public/
-    └── star-support-index.json  # Generated search index
+    ├── star-support-index.json  # Generated search index
+    └── widget/dist/            # Widget files served to browser
 ```
 
 ## Development
 
 ### Building the Widget
 
+**Note**: The Star Support widget is currently bundled with this demo but will be published as a standalone npm package in the future.
+
+To build the widget locally:
+
 ```bash
-cd widget
-pnpm run build
+# Install widget dependencies (only needed once)
+cd widget && npm install && cd ..
+
+# Build and copy widget to public directory
+cd widget && npm run build && cd ..
+cp -r widget/dist/* public/widget/dist/
 ```
+
+### Widget Build Process
+
+The widget uses a custom build script (`widget/build.js`) that:
+1. Compiles TypeScript to JavaScript
+2. Bundles all imports (icons, styles) into a single file
+3. Outputs browser-ready ES modules
+
+This bundling approach avoids module resolution issues when serving the widget as static files.
 
 ### Regenerating the Documentation Index
 
@@ -121,12 +155,30 @@ pnpm run build-star-support-index
 pnpm run dev
 ```
 
+### Common Development Tasks
+
+1. **Modify widget code**: Edit files in `widget/src/`, then rebuild:
+   ```bash
+   cd widget && npm run build && cd ..
+   cp -r widget/dist/* public/widget/dist/
+   ```
+
+2. **Update documentation index**: After changing content:
+   ```bash
+   pnpm run build-star-support-index
+   ```
+
+3. **Test API endpoints**: The chat API is available at:
+   ```
+   POST http://localhost:4321/api/star-support/chat
+   ```
+
 ## Deployment
 
 The demo is configured for Vercel deployment:
 
 1. Set environment variables in Vercel dashboard
-2. Deploy with `vercel --prod`
+2. Deploy with `git push`
 
 ## About the Original Astro Docs
 

@@ -213,36 +213,6 @@ function extractKeywords(content, filePath, frontmatter) {
   return Array.from(keywords).slice(0, 8);
 }
 
-// Build directory structure from documents
-function buildDirectoryStructure(documents) {
-  const structure = {};
-  
-  documents.forEach(doc => {
-    const parts = doc.id.split('/');
-    let current = structure;
-    
-    // Build nested structure
-    parts.forEach((part, index) => {
-      if (index === parts.length - 1) {
-        // This is a file
-        if (!current._files) current._files = [];
-        current._files.push({
-          name: part,
-          title: doc.title,
-          id: doc.id
-        });
-      } else {
-        // This is a directory
-        if (!current[part]) {
-          current[part] = {};
-        }
-        current = current[part];
-      }
-    });
-  });
-  
-  return structure;
-}
 
 async function buildIndex() {
   console.log('🚀 Building Star Support content index...');
@@ -338,6 +308,7 @@ async function buildIndex() {
         const indexItem = {
           id,
           language,
+          filePath, // Store the actual file path
           title: frontmatter.title || id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
           summary,
           url: generateUrl(filePath, language),
@@ -361,9 +332,6 @@ async function buildIndex() {
 
   // Sort by title for consistency
   indexItems.sort((a, b) => a.title.localeCompare(b.title));
-
-  // Directory structure removed - redundant with document IDs
-  // const directoryStructure = buildDirectoryStructure(indexItems);
 
   // Save the index
   const outputPath = path.join(process.cwd(), INDEX_CONFIG.outputFile);

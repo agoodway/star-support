@@ -324,49 +324,6 @@ widget/
 └── README.md
 ```
 
-## Non-Astro API Integration
-
-The widget can work with any backend that implements the expected API contract. Here's an example for a Ruby on Rails API:
-
-```ruby
-# app/controllers/api/chat_controller.rb
-class Api::ChatController < ApplicationController
-  def create
-    # Authenticate if needed
-    if ENV['STAR_SUPPORT_AUTH_KEY']
-      auth_key = request.headers['x-auth-key']
-      return unauthorized unless auth_key == ENV['STAR_SUPPORT_AUTH_KEY']
-    end
-
-    message = params[:message]
-    
-    # Your AI processing logic here
-    response_text = generate_ai_response(message)
-    sources = find_relevant_sources(message)
-    
-    render json: {
-      content: response_text,
-      sources: sources.map { |s| { title: s.title, url: s.url } }
-    }
-  rescue => e
-    render json: { error: e.message }, status: 500
-  end
-
-  private
-
-  def unauthorized
-    render json: { error: 'Unauthorized' }, status: 401
-  end
-end
-```
-
-The key requirements are:
-1. Accept POST requests to `/api/chat` (configurable)
-2. Parse JSON request body with `message` field
-3. Return JSON response with `content` and optional `sources`
-4. Handle CORS headers for cross-origin requests
-5. Optional authentication via `x-auth-key` header
-
 ## License
 
 MIT

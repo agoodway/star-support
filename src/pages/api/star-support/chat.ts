@@ -38,27 +38,23 @@ async function loadIndex() {
 // Load documentation content
 async function loadDocContent(docId: string): Promise<string | null> {
   try {
-    // Sanitize docId to prevent path traversal attacks
-    const sanitizedDocId = docId.replace(/\.\./g, '').replace(/^[\/\\]/, '').replace(/[\/\\]/g, path.sep);
-    
-    // Validate that the docId doesn't contain suspicious patterns
-    if (sanitizedDocId.includes('..') || path.isAbsolute(sanitizedDocId)) {
-      console.error(`⚠️ Suspicious doc ID detected: ${docId}`);
+    // Use the configured content path - no defaults, no assumptions
+    const contentPath = process.env.CONTENT_PATH;
+    if (!contentPath) {
+      console.error('CONTENT_PATH environment variable is not set');
       return null;
     }
     
-    // Safely construct the file path
-    const basePath = path.join(process.cwd(), 'src', 'content', 'docs', 'en');
-    const filePath = path.join(basePath, `${sanitizedDocId}.mdx`);
+    // For now, we expect a single base path where the indexed content lives
+    // The docId already contains the relative path from that base
+    const filePath = path.join(process.cwd(), contentPath, `${docId}.mdx`);
     
-    // Ensure the resolved path is still within the expected directory
+    // Validate path is within project
     const resolvedPath = path.resolve(filePath);
-    const resolvedBase = path.resolve(basePath);
-    if (!resolvedPath.startsWith(resolvedBase)) {
-      console.error(`⚠️ Path traversal attempt detected: ${docId}`);
+    const projectBase = path.resolve(process.cwd());
+    if (!resolvedPath.startsWith(projectBase)) {
       return null;
     }
-    
     
     const content = await fs.readFile(filePath, 'utf-8');
     
@@ -67,9 +63,7 @@ async function loadDocContent(docId: string): Promise<string | null> {
     if (content.startsWith('---')) {
       const endIndex = content.indexOf('---', 3);
       if (endIndex !== -1) {
-        const frontmatter = content.slice(0, endIndex + 3);
         cleanContent = content.slice(endIndex + 3).trim();
-        // console.log(`   ✂️ Removed frontmatter (${frontmatter.length} chars)`);
       }
     }
     
@@ -78,7 +72,6 @@ async function loadDocContent(docId: string): Promise<string | null> {
     const importsRemoved = cleanContent.match(importRegex);
     if (importsRemoved) {
       cleanContent = cleanContent.replace(importRegex, '').trim();
-      // console.log(`   📦 Removed ${importsRemoved.length} MDX import statements`);
     }
     
     // Remove JSX components that won't make sense in plain markdown context
@@ -90,37 +83,26 @@ async function loadDocContent(docId: string): Promise<string | null> {
       .replace(/<FileTree>.*?<\/FileTree>/gs, '[File tree structure]')
       .replace(/<CardGrid>.*?<\/CardGrid>/gs, '[Card grid content]');
     
-    // console.log(`   ✅ Clean content size: ${cleanContent.length} chars`);
     return cleanContent;
   } catch (error) {
     console.error(`❌ Failed to load doc content for ${docId}:`, error);
-    // Try .md extension
-    try {
-      const mdPath = path.join(process.cwd(), 'src', 'content', 'docs', 'en', `${docId}.md`);
-      const content = await fs.readFile(mdPath, 'utf-8');
-      return content;
-    } catch {
-      return null;
-    }
+    return null;
   }
 }
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // console.log('\n🚀 Star Support Chat API Request');
     
     // Check authentication if AUTH_KEY is configured
     const authKey = process.env.STAR_SUPPORT_AUTH_KEY || import.meta.env.STAR_SUPPORT_AUTH_KEY;
     if (authKey) {
       const providedKey = request.headers.get('x-auth-key');
       if (!providedKey || providedKey !== authKey) {
-        // console.log('❌ Authentication failed');
         return new Response(
           JSON.stringify({ error: 'Unauthorized' }),
           { status: 401, headers: { 'Content-Type': 'application/json' } }
         )
       }
-      // console.log('✅ Authentication successful');
     }
     
     let body
@@ -141,7 +123,6 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    // console.log(`💬 User message: "${message}"`);
 
     const modelName = process.env.AI_MODEL_NAME || import.meta.env.AI_MODEL_NAME
     if (!modelName) {
@@ -149,7 +130,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Get max search results configuration
-    const maxSearchResults = parseInt(process.env.MAX_SEARCH_RESULTS || import.meta.env.MAX_SEARCH_RESULTS || '5', 10);
+    const maxSearchResults = parseInt(process.env.MAX_SEARCH_RESULTS || import.meta.env.MAX_SEARCH_RESULTS || '4', 10);
 
     // Load the full index
     const index = await loadIndex();
@@ -179,25 +160,23 @@ User Question: "${message}"
 Instructions:
 1. Analyze the user's question to understand what they're asking about
 2. Review the document titles, summaries, and keywords
-3. Select 1-${maxSearchResults} most relevant documents that would help answer the question
+3. Select up to ${maxSearchResults} most relevant documents that would help answer the question (prefer fewer documents if possible)
 4. Return ONLY a JSON array of document IDs - no explanation, no other text
 
 Your response must be ONLY the JSON array, like this:
-["basics/astro-components", "guides/routing"]
+["getting-started", "guides/overview"]
 
 DO NOT include any other text before or after the JSON array.`;
 
-      // console.log('\n🤔 Asking LLM to select relevant documents...');
       
       try {
         const { text: selectionText } = await generateText({
           model: fireworks(modelName),
           prompt: selectionPrompt,
           temperature: 0.1, // Low temperature for consistent JSON output
-          maxTokens: 200,
+          maxOutputTokens: 200,
         });
 
-        // console.log(`📊 LLM selection response: ${selectionText}`);
 
         // Parse the selected document IDs
         try {
@@ -207,7 +186,6 @@ DO NOT include any other text before or after the JSON array.`;
           if (jsonMatch) {
             // Found a JSON array in the response
             selectedDocs = JSON.parse(jsonMatch[0]);
-            // console.log(`✅ Extracted JSON array from response`);
           } else {
             // No array pattern found, try cleaning and parsing the whole response
             // This handles cases where LLM wraps response in markdown code blocks
@@ -218,15 +196,15 @@ DO NOT include any other text before or after the JSON array.`;
               .replace(/\s*```$/, '');
             
             selectedDocs = JSON.parse(cleanedSelection);
-            // console.log(`✅ Parsed cleaned response as JSON`);
           }
           
           if (!Array.isArray(selectedDocs)) {
-            // console.warn('Selection is not an array, using empty array');
             selectedDocs = [];
           }
           
-          // console.log(`✅ Selected ${selectedDocs.length} documents:`, selectedDocs);
+          // Remove duplicates from selectedDocs
+          selectedDocs = [...new Set(selectedDocs)];
+
         } catch (parseError) {
           console.error('Failed to parse LLM selection:', parseError);
           console.error('Raw response was:', selectionText);
@@ -239,49 +217,30 @@ DO NOT include any other text before or after the JSON array.`;
 
       // Load content for selected documents (in parallel for better performance)
       if (selectedDocs.length > 0) {
-        // console.log('\n📖 Loading full content for selected documents in parallel...');
         const docContents = await Promise.all(
           selectedDocs.map(async (docId: string) => {
             const doc = index.documents.find((d: any) => d.id === docId);
             if (!doc) {
-              // console.log(`   ⚠️ Document not found in index: ${docId}`);
               return null;
             }
             
             const content = await loadDocContent(docId);
             if (content) {
-              // console.log(`   ✅ Loaded: ${doc.title} (${content.length} chars)`);
               return `## ${doc.title}\nURL: ${doc.url}\n\n${content}\n\n---\n`;
             }
-            // console.log(`   ❌ Failed to load: ${doc.title}`);
             return null;
           })
         );
         
         const validContents = docContents.filter(Boolean);
         if (validContents.length > 0) {
-          context = `Here is relevant Astro documentation to help answer the user's question:\n\n${validContents.join('\n')}`;
-          // console.log(`\n📚 Context prepared with ${validContents.length} documents`);
-          // console.log('📄 Total context length:', context.length, 'characters');
-          
-          // Log the first 500 chars of each document to verify content
-          // console.log('\n📖 Document content preview:');
-          validContents.forEach((content, i) => {
-            if (content) {
-              const preview = content.substring(0, 500).replace(/\n/g, ' ');
-              // console.log(`\n   Document ${i + 1} preview: ${preview}...`);
-            }
-          });
+          context = `Here is relevant documentation to help answer the user's question:\n\n${validContents.join('\n')}`;
         }
-      } else {
-        // console.log('⚠️ No documents selected, will answer without context');
       }
-    } else {
-      // console.log('⚠️ No index available, will answer without context');
     }
 
     // Build the final prompt
-    const systemPrompt = `You are an AI assistant for Astro documentation. Help users with their Astro-related questions.
+    const systemPrompt = `You are an AI assistant that helps users with questions about the documentation, product features, troubleshooting, and general support.
 ${context ? '\nUse the provided documentation context to give accurate, helpful answers. Reference specific sections when relevant.' : ''}
 
 CRITICAL CONSTRAINT: The chat widget CANNOT display code blocks. You must adapt your response accordingly.
@@ -301,9 +260,9 @@ FORBIDDEN:
 
 For code examples:
 - Describe the code conceptually
-- Use inline code for key syntax: \`import Layout from './Layout.astro'\`
+- Use inline code for key syntax: \`import Component from './Component.js'\`
 - Break down multi-line code into steps
-- Example: "First, add the import statement \`import Layout from '../layouts/Layout.astro'\` at the top. Then wrap your content in \`<Layout>..content..</Layout>\`"
+- Example: "First, add the import statement \`import Component from './Component'\` at the top. Then use it in your code as \`<Component />\`"
 
 Be conversational and guide users step-by-step without showing full code blocks.`;
 
@@ -311,20 +270,14 @@ Be conversational and guide users step-by-step without showing full code blocks.
       ? `${systemPrompt}\n\nContext:\n${context}\n\nUser Question: ${message}`
       : `${systemPrompt}\n\nUser Question: ${message}`;
 
-    // console.log('\n🤖 Generating final response...');
-    // console.log(`   Model: ${modelName}`);
-    // console.log(`   Context size: ${context.length} chars`);
-    // console.log(`   Documents used: ${selectedDocs.join(', ') || 'none'}`);
     
     const { text } = await generateText({
       model: fireworks(modelName),
       prompt: fullPrompt,
       temperature: 0.7,
-      maxTokens: 1000,
+      maxOutputTokens: 1000,
     })
 
-    // console.log('✅ Response generated successfully');
-    // console.log('📏 Response length:', text.length, 'chars');
 
     // Post-process to remove any code blocks that slipped through
     let cleanedText = text;
@@ -347,7 +300,6 @@ Be conversational and guide users step-by-step without showing full code blocks.
     // Clean up any trailing/leading whitespace
     cleanedText = cleanedText.trim();
     
-    // console.log('🧹 Cleaned response, removed code blocks');
 
     // Prepare sources for the response
     // Check if request is from external site
@@ -384,7 +336,7 @@ Be conversational and guide users step-by-step without showing full code blocks.
 
     // Remove duplicate sources based on URL
     const uniqueSources = sources.filter((source, index, self) => 
-      index === self.findIndex(s => s.url === source.url)
+      source && index === self.findIndex(s => s && s.url === source.url)
     );
 
     // Configure CORS based on environment variables

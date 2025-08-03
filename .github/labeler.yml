@@ -13,5 +13,3 @@ i18n:
       - all-globs-to-any-file: ['src/content/i18n/*', '!src/content/i18n/en.yml']
   - changed-files:
       - all-globs-to-any-file: ['src/content/nav/*', '!src/content/nav/en.ts']
-  - changed-files:
-      - all-globs-to-any-file: ['i18n-guides/*']

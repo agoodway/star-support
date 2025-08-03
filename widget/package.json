@@ -8,8 +8,10 @@
   "files": [
     "dist"
   ],
+  "type": "module",
   "scripts": {
-    "build": "tsc && cp src/styles.css dist/styles.css",
+    "build": "node build.js",
+    "build:old": "tsc && cp src/styles.css dist/styles.css",
     "dev": "tsc --watch",
     "clean": "rm -rf dist"
   },
