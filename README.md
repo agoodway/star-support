@@ -237,6 +237,14 @@ Test the AI assistant with these documentation-focused questions:
 
 ## Deployment
 
+### Important: Widget Build Step
+The widget files must be copied to the public directory before deployment:
+```bash
+# After making widget changes:
+cd widget && pnpm run build
+cp widget/dist/* public/widget/dist/
+```
+
 ### Vercel
 The project includes Vercel adapter configuration:
 - Set `AI_API_KEY` and `STAR_SUPPORT_AUTH_KEY` in Vercel environment variables
