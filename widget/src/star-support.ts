@@ -422,6 +422,15 @@ export class StarSupport {
 			this.state.isLoading = false;
 			this.hideLoading();
 			this.renderMessages();
+			
+			// Ensure messages are scrolled to bottom on mobile
+			if (this.isMobile() && this.messagesContainer) {
+				setTimeout(() => {
+					if (this.messagesContainer) {
+						this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+					}
+				}, 100);
+			}
 		}
 	}
 
@@ -467,14 +476,108 @@ export class StarSupport {
 		this.state.isOpen = true;
 		this.button?.classList.add('star-support-hidden');
 		this.chat?.classList.remove('star-support-hidden');
-		this.input?.focus();
+		
+		// Mobile viewport handling
+		if (this.isMobile()) {
+			this.setupMobileViewport();
+			// Delay focus to prevent immediate keyboard on mobile
+			setTimeout(() => {
+				if (this.input && !this.hasMessages()) {
+					this.input.focus();
+				}
+			}, 300);
+		} else {
+			this.input?.focus();
+		}
 	}
 
 	private closeChat(): void {
 		this.state.isOpen = false;
 		this.button?.classList.remove('star-support-hidden');
 		this.chat?.classList.add('star-support-hidden');
+		
+		// Cleanup mobile viewport
+		if (this.isMobile()) {
+			this.cleanupMobileViewport();
+		}
 	}
+
+	private isMobile(): boolean {
+		return window.innerWidth <= 480 || ('ontouchstart' in window);
+	}
+
+	private hasMessages(): boolean {
+		return this.state.messages.length > 0;
+	}
+
+	private setupMobileViewport(): void {
+		// Store original viewport
+		const viewport = document.querySelector('meta[name="viewport"]');
+		if (viewport) {
+			this.originalViewport = viewport.getAttribute('content') || '';
+		}
+
+		// Prevent body scroll when chat is open
+		document.body.style.overflow = 'hidden';
+		document.body.style.position = 'fixed';
+		document.body.style.width = '100%';
+
+		// Handle iOS specific viewport issues
+		if (this.isIOS()) {
+			// Scroll to top to hide address bar
+			window.scrollTo(0, 0);
+		}
+
+		// Add resize handler for keyboard
+		window.addEventListener('resize', this.handleViewportResize);
+		window.addEventListener('orientationchange', this.handleViewportResize);
+	}
+
+	private cleanupMobileViewport(): void {
+		// Restore body scroll
+		document.body.style.overflow = '';
+		document.body.style.position = '';
+		document.body.style.width = '';
+
+		// Restore original viewport if changed
+		const viewport = document.querySelector('meta[name="viewport"]');
+		if (viewport && this.originalViewport) {
+			viewport.setAttribute('content', this.originalViewport);
+		}
+
+		// Remove event listeners
+		window.removeEventListener('resize', this.handleViewportResize);
+		window.removeEventListener('orientationchange', this.handleViewportResize);
+	}
+
+	private handleViewportResize = (): void => {
+		if (!this.chat || !this.isMobile()) return;
+
+		// Force recalculation of viewport height
+		const vh = window.innerHeight * 0.01;
+		document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+		// Scroll to bottom if user was at bottom
+		if (this.messagesContainer) {
+			const wasAtBottom = 
+				this.messagesContainer.scrollTop + this.messagesContainer.clientHeight >= 
+				this.messagesContainer.scrollHeight - 10;
+			
+			if (wasAtBottom) {
+				setTimeout(() => {
+					if (this.messagesContainer) {
+						this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+					}
+				}, 100);
+			}
+		}
+	}
+
+	private isIOS(): boolean {
+		return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+	}
+
+	private originalViewport: string = '';
 
 	public mount(selector: string): void {
 		const container = document.querySelector(selector);

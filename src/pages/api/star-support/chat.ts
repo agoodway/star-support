@@ -39,7 +39,7 @@ async function loadIndex() {
 async function loadDocContent(docId: string): Promise<string | null> {
   try {
     // Use the configured content path - no defaults, no assumptions
-    const contentPath = process.env.CONTENT_PATH;
+    const contentPath = process.env.CONTENT_PATH || import.meta.env.CONTENT_PATH;
     if (!contentPath) {
       console.error('CONTENT_PATH environment variable is not set');
       return null;

@@ -28,6 +28,13 @@ export declare class StarSupport {
     private toggleChat;
     private openChat;
     private closeChat;
+    private isMobile;
+    private hasMessages;
+    private setupMobileViewport;
+    private cleanupMobileViewport;
+    private handleViewportResize;
+    private isIOS;
+    private originalViewport;
     mount(selector: string): void;
     destroy(): void;
 }

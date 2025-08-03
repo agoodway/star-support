@@ -546,19 +546,102 @@
 /* Responsive design */
 @media (max-width: 480px) {
   .star-support-chat {
+    position: fixed;
     width: 100%;
     height: 100%;
-    max-height: 100vh;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    height: calc(var(--vh, 1vh) * 100); /* Fallback for JS calculated viewport */
+    max-height: none;
     bottom: 0;
     right: 0;
     left: 0;
     top: 0;
     border-radius: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
   }
   
   .star-support-button {
-    bottom: 1rem;
-    right: 1rem;
+    position: fixed;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    right: calc(1rem + env(safe-area-inset-right, 0px));
+    z-index: 9999;
+  }
+  
+  .star-support-header {
+    flex-shrink: 0;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+  }
+  
+  .star-support-messages {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding-bottom: 1rem;
+  }
+  
+  .star-support-input-container {
+    flex-shrink: 0;
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    background: var(--ss-background);
+    border-top: 1px solid var(--ss-border);
+    position: relative;
+    z-index: 100;
+  }
+  
+  /* Ensure input and buttons are large enough for touch */
+  .star-support-input {
+    min-height: 44px; /* iOS recommended touch target size */
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem 1rem;
+  }
+  
+  .star-support-send {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .star-support-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Adjust message container padding */
+  .star-support-messages {
+    padding: 1rem;
+  }
+  
+  /* Ensure suggested questions are touch-friendly */
+  .star-support-suggested-question {
+    min-height: 44px;
+    padding: 0.75rem 1.25rem;
+    font-size: 15px;
+  }
+  
+  /* Adjust message bubbles for mobile */
+  .star-support-message {
+    max-width: 85%;
+    font-size: 15px;
+  }
+  
+  /* Handle landscape orientation */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .star-support-header {
+      padding: 0.75rem 1rem;
+    }
+    
+    .star-support-messages {
+      padding: 0.75rem;
+    }
+    
+    .star-support-input-container {
+      padding: 0.75rem;
+    }
   }
 }
 
