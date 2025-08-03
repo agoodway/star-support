@@ -9,6 +9,7 @@ const DEFAULT_CONFIG: StarSupportConfig = {
 			chat: '/api/star-support/chat',
 			config: '/api/star-support/config',
 			feedback: '/api/star-support/feedback',
+			humanHandoff: '/api/star-support/human-handoff',
 		},
 	},
 	ui: {
@@ -25,6 +26,7 @@ const DEFAULT_CONFIG: StarSupportConfig = {
 		welcomeMessage: 'Hi! How can I help you today?',
 		placeholderText: 'Type your message...',
 		botName: 'AI Bot',
+		enableHumanHandoff: false,
 	},
 };
 
@@ -39,10 +41,16 @@ export class StarSupport {
 
 	constructor(config: Partial<StarSupportConfig> = {}) {
 		this.config = { ...DEFAULT_CONFIG, ...config };
+		
+		// Check localStorage for saved email
+		const savedEmail = localStorage.getItem('star-support-email');
+		
 		this.state = {
 			isOpen: false,
 			messages: [],
 			isLoading: false,
+			showEmailForm: false,
+			userEmail: config.behavior?.userEmail || savedEmail || undefined,
 		};
 
 		this.init();
@@ -326,6 +334,11 @@ export class StarSupport {
 			// Only scroll to bottom if user was at bottom and no new assistant message
 			this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
 		}
+		
+		// Show email form if needed
+		if (this.state.showEmailForm && this.config.behavior?.enableHumanHandoff) {
+			this.showEmailCaptureForm();
+		}
 	}
 
 	private sanitizeInput(input: string): string {
@@ -409,6 +422,11 @@ export class StarSupport {
 			};
 
 			this.state.messages.push(assistantMessage);
+			
+			// Check if human handoff was requested
+			if (data.requestHumanHandoff && this.config.behavior?.enableHumanHandoff) {
+				this.state.showEmailForm = true;
+			}
 		} catch (error) {
 			console.error('Error sending message:', error);
 			const errorMessage: ChatMessage = {
@@ -578,6 +596,137 @@ export class StarSupport {
 	}
 
 	private originalViewport: string = '';
+	
+	private showEmailCaptureForm(): void {
+		if (!this.messagesContainer) return;
+		
+		// Check if form already exists
+		if (document.getElementById('star-support-email-form')) return;
+		
+		const emailForm = document.createElement('div');
+		emailForm.id = 'star-support-email-form';
+		emailForm.className = 'star-support-email-form';
+		emailForm.innerHTML = `
+			<div class="star-support-email-header">
+				<span>✉️</span>
+				<span>Connect with our team</span>
+			</div>
+			<label for="star-support-email-input">Your email:</label>
+			<input 
+				type="email" 
+				id="star-support-email-input"
+				class="star-support-email-input" 
+				placeholder="email@example.com"
+				value="${this.state.userEmail || ''}"
+				required
+			/>
+			<label for="star-support-email-message">Add any additional details (optional):</label>
+			<textarea 
+				id="star-support-email-message"
+				class="star-support-email-textarea" 
+				placeholder="Any additional context..."
+			></textarea>
+			<div class="star-support-email-buttons">
+				<button class="star-support-email-cancel">Cancel</button>
+				<button class="star-support-email-submit">Send</button>
+			</div>
+		`;
+		
+		this.messagesContainer.appendChild(emailForm);
+		
+		// Scroll to show form
+		setTimeout(() => {
+			emailForm.scrollIntoView({ behavior: 'smooth', block: 'end' });
+		}, 100);
+		
+		// Setup event handlers
+		const emailInput = emailForm.querySelector('.star-support-email-input') as HTMLInputElement;
+		const messageInput = emailForm.querySelector('.star-support-email-textarea') as HTMLTextAreaElement;
+		const cancelBtn = emailForm.querySelector('.star-support-email-cancel');
+		const submitBtn = emailForm.querySelector('.star-support-email-submit');
+		
+		cancelBtn?.addEventListener('click', () => {
+			this.state.showEmailForm = false;
+			emailForm.remove();
+		});
+		
+		submitBtn?.addEventListener('click', async () => {
+			const email = emailInput.value.trim();
+			const message = messageInput.value.trim();
+			
+			// Basic email validation
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			if (!emailRegex.test(email)) {
+				emailInput.focus();
+				return;
+			}
+			
+			// Disable submit button
+			submitBtn.setAttribute('disabled', 'true');
+			submitBtn.textContent = 'Sending...';
+			
+			try {
+				await this.submitHumanHandoff(email, message);
+				
+				// Save email to localStorage
+				localStorage.setItem('star-support-email', email);
+				this.state.userEmail = email;
+				
+				// Show success message
+				emailForm.innerHTML = `
+					<div class="star-support-email-success">
+						Request sent! We'll be in touch soon.
+					</div>
+				`;
+				
+				// Remove form after delay
+				setTimeout(() => {
+					this.state.showEmailForm = false;
+					emailForm.remove();
+				}, 5000);
+				
+			} catch (error) {
+				console.error('Failed to submit handoff request:', error);
+				submitBtn.removeAttribute('disabled');
+				submitBtn.textContent = 'Send';
+				// Could show error message to user
+			}
+		});
+		
+		// Focus email input if not already filled
+		if (!this.state.userEmail) {
+			emailInput.focus();
+		}
+	}
+	
+	private async submitHumanHandoff(email: string, message: string): Promise<void> {
+		const baseUrl = this.config.api.baseUrl || window.location.origin;
+		const handoffEndpoint = this.config.api.endpoints?.humanHandoff || '/api/star-support/human-handoff';
+		const url = `${baseUrl}${handoffEndpoint}`;
+		
+		const authKey = this.config.api.authKey || '';
+		const headers: HeadersInit = {
+			'Content-Type': 'application/json',
+		};
+		
+		if (authKey) {
+			headers['x-auth-key'] = authKey;
+		}
+		
+		const response = await fetch(url, {
+			method: 'POST',
+			headers,
+			body: JSON.stringify({
+				email,
+				message,
+				conversationHistory: this.state.messages,
+			}),
+		});
+		
+		if (!response.ok) {
+			throw new Error('Failed to submit handoff request');
+		}
+	}
 
 	public mount(selector: string): void {
 		const container = document.querySelector(selector);
@@ -608,6 +757,8 @@ export class StarSupportElement extends HTMLElement {
 			'button-icon',
 			'suggested-questions',
 			'topic-context',
+			'enable-human-handoff',
+			'user-email',
 		];
 	}
 
@@ -631,6 +782,8 @@ export class StarSupportElement extends HTMLElement {
 						? JSON.parse(this.getAttribute('suggested-questions')!) 
 						: undefined,
 					topicContext: this.getAttribute('topic-context') || undefined,
+					enableHumanHandoff: this.getAttribute('enable-human-handoff') === 'true',
+					userEmail: this.getAttribute('user-email') || undefined,
 				},
 			};
 

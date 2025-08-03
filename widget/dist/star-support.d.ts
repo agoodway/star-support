@@ -35,6 +35,8 @@ export declare class StarSupport {
     private handleViewportResize;
     private isIOS;
     private originalViewport;
+    private showEmailCaptureForm;
+    private submitHumanHandoff;
     mount(selector: string): void;
     destroy(): void;
 }

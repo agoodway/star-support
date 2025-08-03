@@ -18,6 +18,7 @@ export interface StarSupportConfig {
       chat: string;
       config: string;
       feedback: string;
+      humanHandoff?: string;
     };
     authKey?: string;
   };
@@ -40,6 +41,8 @@ export interface StarSupportConfig {
     headerTitle?: string;
     suggestedQuestions?: string[];
     topicContext?: string;
+    enableHumanHandoff?: boolean;
+    userEmail?: string;
   };
 }
 
@@ -47,6 +50,7 @@ export interface ChatResponse {
   message: ChatMessage;
   conversationId?: string;
   error?: string;
+  requestHumanHandoff?: boolean;
 }
 
 export interface WidgetState {
@@ -54,4 +58,6 @@ export interface WidgetState {
   messages: ChatMessage[];
   isLoading: boolean;
   conversationId?: string;
+  showEmailForm: boolean;
+  userEmail?: string;
 }

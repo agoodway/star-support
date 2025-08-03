@@ -310,6 +310,8 @@ ${context ? '\nUse the provided documentation context to give accurate, helpful 
 
 IMPORTANT: Only use information from the provided documentation context. If the context doesn't contain relevant information, say "I don't have information about that in the documentation." Never make up information not mentioned in the context.
 
+HUMAN HANDOFF: If the user expresses frustration, asks to talk to a human, mentions contacting support, seems very confused after multiple attempts, or if their issue seems too complex for you to handle effectively, respond briefly and naturally with something like "Let me get someone to help you with that!" or "I'll connect you with our team." or similar friendly variation. When you determine human handoff is needed, add "HANDOFF_NEEDED: true" at the very end of your response (this will be parsed out and not shown to the user).
+
 CRITICAL CONSTRAINT: The chat widget CANNOT display code blocks. You must adapt your response accordingly.
 
 ALLOWED formatting:
@@ -357,6 +359,14 @@ Be conversational and guide users step-by-step without showing full code blocks.
 
     // Post-process to remove any code blocks that slipped through
     let cleanedText = text;
+    
+    // Check for handoff marker and extract it
+    let requestHumanHandoff = false;
+    const handoffMatch = cleanedText.match(/HANDOFF_NEEDED:\s*true/i);
+    if (handoffMatch) {
+      requestHumanHandoff = true;
+      cleanedText = cleanedText.replace(/HANDOFF_NEEDED:\s*true/i, '').trim();
+    }
     
     // Remove triple backtick code blocks and surrounding context
     cleanedText = cleanedText.replace(/(?:Here's an example.*?:|.*?example of.*?:)?\s*```[\s\S]*?```/gi, '');
@@ -466,7 +476,8 @@ Be conversational and guide users step-by-step without showing full code blocks.
     return new Response(
       JSON.stringify({ 
         content: cleanedText,
-        sources: uniqueSources.length > 0 ? uniqueSources : undefined
+        sources: requestHumanHandoff ? undefined : (uniqueSources.length > 0 ? uniqueSources : undefined),
+        requestHumanHandoff
       }),
       {
         status: 200,
