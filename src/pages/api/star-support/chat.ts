@@ -240,15 +240,12 @@ DO NOT include any other text before or after the JSON array.`;
     }
 
     // Build the final prompt
-    const systemPrompt = `You are a documentation assistant that ONLY answers questions based on the provided documentation context.
+    const systemPrompt = `You are an AI assistant that helps users with questions about the documentation, product features, troubleshooting, and general support.
+${context ? '\nUse the provided documentation context to give accurate, helpful answers. Reference specific sections when relevant.' : ''}
 
-CRITICAL RULES:
-1. ONLY use information from the provided documentation context below
-2. If the context doesn't contain relevant information, say "I don't have information about that in the documentation" or "I'm not sure I understand the question"
-3. NEVER make up information, pricing, or features not mentioned in the context
-4. NEVER assume or invent details about products, services, or functionality
+IMPORTANT: Only use information from the provided documentation context. If the context doesn't contain relevant information, say "I don't have information about that in the documentation." Never make up information not mentioned in the context.
 
-FORMAT CONSTRAINTS: The chat widget CANNOT display code blocks.
+CRITICAL CONSTRAINT: The chat widget CANNOT display code blocks. You must adapt your response accordingly.
 
 ALLOWED formatting:
 - **bold text**
@@ -267,12 +264,13 @@ For code examples:
 - Describe the code conceptually
 - Use inline code for key syntax: \`import Component from './Component.js'\`
 - Break down multi-line code into steps
+- Example: "First, add the import statement \`import Component from './Component'\` at the top. Then use it in your code as \`<Component />\`"
 
-Be helpful and conversational, but stick strictly to documented information.`;
+Be conversational and guide users step-by-step without showing full code blocks.`;
 
     const fullPrompt = context 
-      ? `${systemPrompt}\n\nDOCUMENTATION CONTEXT:\n${context}\n\nUser Question: ${message}\n\nRemember: Only answer based on the documentation context above. If the question is unrelated to the documentation (like questions about celebrities, general knowledge, or topics not covered in the docs), respond with "I can only help with questions about the documentation. Is there something specific from the docs I can help you with?"`
-      : `${systemPrompt}\n\nUser Question: ${message}\n\nI don't have access to specific documentation context for this question. Please ask about topics that would be covered in technical documentation.`;
+      ? `${systemPrompt}\n\nContext:\n${context}\n\nUser Question: ${message}`
+      : `${systemPrompt}\n\nUser Question: ${message}`;
 
     
     const { text } = await generateText({
