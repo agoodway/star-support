@@ -10,6 +10,58 @@ import { Ad } from '../RightSidebar/ad';
 <DefaultFooter />
 <FooterLinks />
 
+<!-- Star Support Widget - Show on all pages -->
+<star-support
+  api-base-url={Astro.url.origin}
+  auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
+  theme="auto"
+  position="bottom-right"
+  welcome-message="Hi! How can I help you with Astro today?"
+  bot-name="Astro AI"
+  header-title="Astro Chat"
+/>
+
+<script>
+  // Import the Star Support widget
+  import '/widget/dist/star-support.js';
+  
+  // Initialize widget with Starlight colors
+  const widget = document.querySelector('star-support');
+  if (widget) {
+    console.log('🚀 Star Support widget initialized');
+    
+    // Add Starlight color scheme
+    const style = document.createElement('style');
+    style.textContent = `
+      :root {
+        --ss-primary: var(--sl-color-accent);
+        --ss-secondary: var(--sl-color-text-accent);
+        --ss-background: var(--sl-color-bg);
+        --ss-surface: var(--sl-color-bg-sidebar);
+        --ss-text: var(--sl-color-text);
+        --ss-text-secondary: var(--sl-color-text-soft);
+        --ss-border: var(--sl-color-hairline-shade);
+        --ss-shadow: rgba(0, 0, 0, 0.1);
+        --ss-radius: var(--sl-border-radius);
+        --ss-font-family: var(--sl-font);
+      }
+      
+      [data-theme="dark"] {
+        --ss-shadow: rgba(0, 0, 0, 0.3);
+      }
+      
+      /* Ensure widget is above Starlight elements */
+      .star-support-widget {
+        z-index: 9999;
+      }
+      .star-support-chat {
+        z-index: 10000;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+</script>
+
 <style>
 	@media (min-width: 72rem) {
 		:global([data-has-toc]) .hide-when-toc-is-visible {

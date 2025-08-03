@@ -1,0 +1,28 @@
+{
+  "name": "@star-support/widget",
+  "version": "0.1.0",
+  "description": "Generic TypeScript chat widget for AI-powered support",
+  "main": "dist/star-support.js",
+  "module": "dist/star-support.js",
+  "types": "dist/star-support.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && cp src/styles.css dist/styles.css",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "chat",
+    "widget",
+    "typescript",
+    "ai",
+    "support"
+  ],
+  "author": "Star Support Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

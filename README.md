@@ -1,76 +1,278 @@
-# Astro Docs <picture><source media="(prefers-color-scheme: dark)" srcset="https://astro.build/assets/press/astro-icon-light.png"><source media="(prefers-color-scheme: light)" srcset="https://astro.build/assets/press/astro-icon-dark.png"><img align="right" valign="center" height="79" width="63" src="https://astro.build/assets/press/astro-icon-dark.png" alt="Astro logo" /></picture>
+# Star Support: AI-Powered Documentation Assistant
+
+**A TypeScript widget library for creating AI-powered question and support bots that understand your Astro content.**
+
+> **Note**: This is a fork of the [official Astro documentation repository](https://github.com/withastro/docs) used to demonstrate the Star Support widget and AI chat functionality. The widget and backend components have not yet been extracted into a standalone library.
+
+Star Support provides a framework-agnostic chat widget that can be embedded anywhere while leveraging Astro's content collection system for intelligent document retrieval and AI-powered responses.
+
+## Quick Start (Demo Application)
+
+This repository includes a complete Astro documentation site demonstrating Star Support integration.
+
+```bash
+git clone https://github.com/your-repo/star-support
+cd star-support
+pnpm install
+cp .env.example .env
+# Configure your AI_API_KEY in .env
+pnpm run build-star-support-index
+pnpm run dev
+```
+
+The demo site runs at `http://localhost:4321` with the Star Support widget enabled.
+
+## Star Support Library
+
+### Core Features
+
+- **Framework Agnostic**: TypeScript widget works with any web application
+- **RAG-Powered**: Retrieval-Augmented Generation using your documentation
+- **Smart Document Selection**: AI selects 1-8 most relevant documents per query
+- **Security First**: XSS prevention, input sanitization, optional authentication
+- **Production Ready**: Error boundaries, responsive design, accessibility support
+
+### Architecture
+
+```
+star-support/
+├── widget/                 # TypeScript widget library
+│   ├── src/
+│   │   ├── star-support.ts    # Main widget class
+│   │   ├── types.ts           # TypeScript interfaces
+│   │   └── styles.css         # Widget styles
+│   └── dist/               # Built files
+├── src/pages/api/star-support/
+│   └── chat.ts            # Astro API endpoint
+├── scripts/
+│   └── build-index.mjs    # Documentation indexer
+└── public/
+    └── star-support-index.json  # Generated search index
+```
+
+## Installation Options
+
+### Option 1: Embed in Astro Site
+
+```astro
+---
+// src/components/Footer.astro
+---
+<star-support
+  api-base-url={Astro.url.origin}
+  auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
+  theme="auto"
+  position="bottom-right"
+  welcome-message="Hi! How can I help you with the documentation?"
+  bot-name="AI Assistant"
+  header-title="Documentation Chat"
+/>
+
+<script>
+  import '/widget/dist/star-support.js';
+</script>
+```
+
+### Option 2: External Site Integration
+
+```html
+<!-- In any web application -->
+<script type="module">
+  import 'https://your-docs-site.com/widget/dist/star-support.js'
+</script>
+
+<star-support 
+  api-base-url="https://your-docs-site.com"
+  theme="dark"
+  position="bottom-right">
+</star-support>
+```
+
+## Documentation Index Generation
+
+### Basic Usage
+
+```bash
+pnpm run build-star-support-index
+```
+
+### Configuration Options
+
+Set environment variables in `.env`:
+
+```bash
+# AI Provider (Required)
+AI_API_KEY="fw_your_fireworks_api_key"
+AI_API_BASE="https://api.fireworks.ai/inference/v1"
+AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
+
+# Widget Security (Optional)
+STAR_SUPPORT_AUTH_KEY="your_secret_key"
+
+# Index Generation (Optional)
+INDEX_LANGUAGES="en"  # Comma-separated
+INDEX_INCLUDE_PATHS=""  # Specific paths only
+INDEX_EXCLUDE_PATHS=""  # Paths to exclude
+SUMMARY_STRATEGY="standard"  # brief, standard, detailed
+
+# URL Configuration (Optional)
+URL_STRATEGY="auto"  # auto, no-locale, locale-all
+BASE_URL=""  # For external widget usage
+```
+
+### Advanced Index Configuration
+
+#### Target Specific Documentation Sections
+```bash
+INDEX_INCLUDE_PATHS="src/content/docs/en/guides,src/content/docs/en/reference"
+```
+
+#### Exclude Internal Documentation
+```bash
+INDEX_EXCLUDE_PATHS="src/content/docs/en/internal,src/content/docs/en/drafts"
+```
+
+#### Optimize for Different Use Cases
+```bash
+# Comprehensive documentation (default)
+SUMMARY_STRATEGY="standard"
+
+# Smaller indexes
+SUMMARY_STRATEGY="brief"
+
+# Technical depth
+SUMMARY_STRATEGY="detailed"
+```
+
+## AI Provider Configuration
+
+### Fireworks AI (Recommended)
+
+Fireworks AI with Llama 3.1 8B provides excellent performance for documentation tasks:
+
+```bash
+AI_API_KEY="fw_your_api_key"
+AI_API_BASE="https://api.fireworks.ai/inference/v1"
+AI_MODEL_NAME="accounts/fireworks/models/llama-v3p1-8b-instruct"
+```
+
+### Alternative Providers
+
+The system can be adapted for other providers by modifying the AI integration in `/src/pages/api/star-support/chat.ts`:
+
+#### OpenAI Integration
+```typescript
+import { openai } from '@ai-sdk/openai';
+
+const response = await generateText({
+  model: openai('gpt-4'),
+  prompt: buildPromptWithContext(message, context)
+});
+```
+
+#### Anthropic Integration
+```typescript
+import { anthropic } from '@ai-sdk/anthropic';
+
+const response = await generateText({
+  model: anthropic('claude-3-sonnet-20240229'),
+  prompt: buildPromptWithContext(message, context)
+});
+```
+
+## Widget Configuration
+
+### TypeScript Interface
+
+```typescript
+interface StarSupportConfig {
+  api: {
+    baseUrl: string
+    authKey?: string
+  }
+  ui?: {
+    position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+    theme?: 'light' | 'dark' | 'auto'
+    buttonIcon?: string
+  }
+  behavior?: {
+    welcomeMessage?: string
+    headerTitle?: string
+    botName?: string
+  }
+}
+```
+
+### Web Component Attributes
+
+```html
+<star-support
+  api-base-url="https://docs.example.com"
+  auth-key="optional-secret"
+  theme="auto"
+  position="bottom-right"
+  welcome-message="How can I help?"
+  bot-name="Assistant"
+  header-title="Support Chat"
+  button-icon="robotWhite">
+</star-support>
+```
+
+## Example Queries
+
+Test the AI assistant with these documentation-focused questions:
+
+1. **"How do I add TypeScript to my Astro project?"**
+2. **"What's the difference between .astro and .md files?"**
+3. **"How do I fetch data from an API in Astro?"**
+4. **"Can I use React components in Astro?"**
+5. **"How do I set up environment variables?"**
+6. **"What's the best way to handle images in Astro?"**
+7. **"How do I enable server-side rendering?"**
+8. **"How do I deploy my Astro site to Vercel?"**
+9. **"How do I create dynamic routes?"**
+10. **"What are Astro integrations and how do I install them?"**
+11. **"How do I use content collections for my blog?"**
+12. **"How do I optimize my Astro site for SEO?"**
+
+## Production Configuration
+
+### Security Recommendations
+
+```bash
+# Use authentication for external sites
+STAR_SUPPORT_AUTH_KEY="strong-random-key"
+
+# Configure CORS for specific domains  
+STAR_SUPPORT_CORS_ORIGIN="https://yourapp.com"
+```
 
 
-To all who come to this happy place: welcome.
+## Development
 
-This is the repo for [docs.astro.build](https://docs.astro.build/).
-This repo contains all the source code we use to build our docs site.
+### Running This Demo Site
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/withastro/docs)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/github/withastro/docs)
-[![Open in Codeflow](https://developer.stackblitz.com/img/open_in_codeflow.svg)](https://pr.new/github.com/withastro/docs)
+```bash
+pnpm install
+pnpm run dev
+```
 
-## We are Astro
+### Building the Widget
 
-Astro is an all-in-one web framework for building fast, content-focused websites.
-We want everyone to be successful building sites, and that means helping everyone understand how Astro works.
+```bash
+cd widget
+pnpm run build
+```
 
-## You are Awesome
+### Regenerating Index
 
-You can also help make the docs awesome.
-Your feedback is welcome.
-Your writing, editing, translating, designing, and developing skills are welcome.
-You being a part of our community is welcome.
+```bash
+pnpm run build-star-support-index
+```
 
-## Chat with Us
+## Contributing
 
-You can learn more about Astro, get support, and meet other devs in [our Discord community](https://astro.build/chat).
+This project demonstrates AI-powered documentation assistance. The widget library can be extracted and used independently in any web application that needs intelligent document-based Q&A capabilities.
 
-## Raise an Issue
-
-Is something missing?
-Is something confusing?
-Is something wrong?
-
-Creating a new Issue puts a problem on our radar!
-
-[See if your issue has already been reported](https://github.com/withastro/docs/issues), and if not, [create a new one](https://github.com/withastro/docs/issues/new/choose).
-
-## Share an Idea
-
-Could something be better?
-Want to share an idea with us?
-
-Discussions are threads where you can offer feedback on things that might not exactly be problems to be fixed but are ideas to be explored. 
-
-[Join the Docs Discussions](https://github.com/withastro/docs/discussions) where we brainstorm, ask questions, share hopes and dreams...
-
-## Make a Fix or Contribution
-
-Did you find a typo, a broken link, or another item with an obvious quick fix?
-
-If you can see what the problem is, and you know how to fix it, then you can make a PR (pull request) with the change and contribute to the docs repo yourself.
-
-> Want to make a larger contribution? Please see [CONTRIBUTING.md](https://github.com/withastro/docs/blob/main/CONTRIBUTING.md) first! 
-
-## Translate a Page
-
-Speak another language natively? 
-
-Join our i18n gang on Discord or jump into the PRs to help with reviewing existing draft translations!
-
-Check out the dedicated [i18n guide](https://contribute.docs.astro.build/guides/i18n/) for more details.
-
-### Translation progress
-
-<a href="https://i18n.docs.astro.build/">
-  <img alt="Details of each language’s progress translating the Astro Docs" width="600" src="https://i18n.docs.astro.build/summary.svg" />
-</a>
-
-## Next Steps
-
-- [Read the docs](https://docs.astro.build/)
-- [Raise an issue](https://github.com/withastro/docs/issues/new)
-- [Participate in a discussion](https://github.com/withastro/docs/discussions)
-- [Join the #docs channel on Discord](https://discord.gg/cZDZU3hJHc)
+For larger contributions, please open an issue first to discuss your proposed changes.
 
