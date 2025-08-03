@@ -187,7 +187,8 @@ export class StarSupport {
         if (!this.messagesContainer)
             return;
         const previousScrollHeight = this.messagesContainer.scrollHeight;
-        const wasAtBottom = this.messagesContainer.scrollTop + this.messagesContainer.clientHeight >= this.messagesContainer.scrollHeight - 10;
+        const wasAtBottom = this.messagesContainer.scrollTop + this.messagesContainer.clientHeight >=
+            this.messagesContainer.scrollHeight - 10;
         this.messagesContainer.innerHTML = '';
         let newAssistantMessage = null;
         this.state.messages.forEach((message, index) => {
@@ -202,20 +203,24 @@ export class StarSupport {
             </div>
             <div class="star-support-message-content">
               <div class="star-support-message ${message.role}">${this.parseSimpleMarkdown(message.content)}</div>
-              ${message.sources && message.sources.length > 0 ? `
+              ${message.sources && message.sources.length > 0
+                    ? `
                 <div class="star-support-sources">
                   <div class="star-support-sources-label">Sources:</div>
                   <div class="star-support-sources-list">
-                    ${message.sources.map(source => `
+                    ${message.sources
+                        .map((source) => `
                       <a href="${source.url}" class="star-support-source-link" target="_blank" rel="noopener noreferrer">
                         <span class="star-support-source-icon">🔗</span>
                         <span class="star-support-source-title">${source.title}</span>
                         <span class="star-support-source-arrow">→</span>
                       </a>
-                    `).join('')}
+                    `)
+                        .join('')}
                   </div>
                 </div>
-              ` : ''}
+              `
+                    : ''}
               <div class="star-support-message-label">${this.config.behavior?.botName || 'AI Bot'}</div>
             </div>
           </div>
@@ -390,7 +395,15 @@ export class StarSupportElement extends HTMLElement {
         this.widget = null;
     }
     static get observedAttributes() {
-        return ['api-base-url', 'theme', 'position', 'welcome-message', 'bot-name', 'header-title', 'button-icon'];
+        return [
+            'api-base-url',
+            'theme',
+            'position',
+            'welcome-message',
+            'bot-name',
+            'header-title',
+            'button-icon',
+        ];
     }
     connectedCallback() {
         try {
@@ -418,7 +431,7 @@ export class StarSupportElement extends HTMLElement {
             this.dispatchEvent(new CustomEvent('star-support-error', {
                 detail: { error, message: 'Failed to initialize Star Support widget' },
                 bubbles: true,
-                composed: true
+                composed: true,
             }));
         }
     }

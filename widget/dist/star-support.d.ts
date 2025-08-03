@@ -1,4 +1,4 @@
-import { StarSupportConfig } from './types';
+import type { StarSupportConfig } from './types';
 import './styles.css';
 export declare class StarSupport {
     private config;

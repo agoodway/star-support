@@ -48,7 +48,6 @@ Include the built files and configure the widget:
 // src/components/Footer.astro
 ---
 <star-support
-  api-base-url={Astro.url.origin}
   auth-key={import.meta.env.STAR_SUPPORT_AUTH_KEY || ''}
   theme="auto"
   position="bottom-right"
@@ -73,6 +72,8 @@ Include the built files and configure the widget:
   position="bottom-right">
 </star-support>
 ```
+
+Note: `api-base-url` defaults to current origin if not specified.
 
 ### Configuration Attributes
 

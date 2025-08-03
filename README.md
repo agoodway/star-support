@@ -235,6 +235,14 @@ Test the AI assistant with these documentation-focused questions:
 11. **"How do I use content collections for my blog?"**
 12. **"How do I optimize my Astro site for SEO?"**
 
+## Deployment
+
+### Vercel
+The project includes Vercel adapter configuration:
+- Set `AI_API_KEY` and `STAR_SUPPORT_AUTH_KEY` in Vercel environment variables
+- The site URL is automatically detected from Vercel's environment
+- API routes remain server-side while pages are statically generated
+
 ## Production Configuration
 
 ### Security Recommendations

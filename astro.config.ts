@@ -1,5 +1,5 @@
 import starlight from '@astrojs/starlight';
-import vercelStatic from '@astrojs/vercel/static';
+import vercel from '@astrojs/vercel';
 import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections';
 import { defineConfig, sharpImageService } from 'astro/config';
 import rehypeSlug from 'rehype-slug';
@@ -13,15 +13,13 @@ import { rehypeTasklistEnhancer } from './config/plugins/rehype-tasklist-enhance
 import { remarkFallbackLang } from './config/plugins/remark-fallback-lang';
 
 // For Vercel deployments, use the deployment URL
-const site = process.env.VERCEL_URL 
-  ? `https://${process.env.VERCEL_URL}` 
-  : 'http://localhost:4321';
+const site = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:4321';
 
 // https://astro.build/config
 export default defineConfig({
 	site,
 	output: 'static',
-	adapter: vercelStatic(),
+	adapter: vercel(),
 	integrations: [
 		devServerFileWatcher([
 			'./config/**', // Custom plugins and integrations
